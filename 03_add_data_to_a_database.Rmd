@@ -86,8 +86,8 @@ First let's add just a single xml file
 
 ```{r}
 mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
-                                       recursive = FALSE,
-                                     full = TRUE)
+                                         recursive = FALSE,
+                                         full = TRUE)
 # only use one
 mz_file_paths <- mz_file_paths[[1]]
 
@@ -111,7 +111,6 @@ mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
 
 IDBacApp::process_mzml(mzFilePaths = here::here("data", "mzxml", paste0(mz_file_name, ".mzXML")),
                        sampleIds = mz_file_name,
-                       sqlDirectory = sqlDirectory$sqlDirectory,
                        idbac_pool = db_connection$my_new_database,
                        acquisitionInfo = NULL)
 
@@ -142,29 +141,29 @@ dplyr::tbl(db_connection$my_new_database, "xml")
 
 
 
-## Now add the rest of the mzXML files
+## Adding multiple mzXML files
 
+It is also possible to add multiple mzXML/mzML files at once, simply pass multiple paths and names as character vectors to `IDBacApp::process_mzml()`. 
 
 ```{r}
 mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
-                                       recursive = FALSE,
-                                     full = TRUE)
+                                         recursive = FALSE,
+                                         full = TRUE)
 print(mz_file_paths)
 ```
 
-Get the name:
+Names we will use:
 ```{r}
-mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
+mz_file_names <- base::basename(tools::file_path_sans_ext(mz_file_paths))
 
-print(mz_file_name)
+print(mz_file_names)
 
 ```
 
 
 ```{r}
 IDBacApp::process_mzml(mzFilePaths = mz_file_paths,
-                       sampleIds = mz_file_name,
-                       sqlDirectory = sqlDirectory$sqlDirectory,
+                       sampleIds = mz_file_names,
                        idbac_pool = db_connection$my_new_database,
                        acquisitionInfo = NULL)
 
@@ -174,8 +173,8 @@ IDBacApp::process_mzml(mzFilePaths = mz_file_paths,
 We can see below that this has now added data for all of the mzXML files given.  
 
 Important things to note:
-  
-  1. The data from `172-1` was only added the first time. IDBac only appends data, it *never* overwrites data in the database (except in the metadata table). IDBac looks at each spectrum_mass_hash, spectrum_intensity_hash, and strain_id and only creates a new entry if those are unique from something already existing in the database.
+
+1. The data from `172-1` was only added the first time. IDBac only appends data, it *never* overwrites data in the database (except in the metadata table). IDBac looks at each spectrum_mass_hash, spectrum_intensity_hash, and strain_id and only creates a new entry if those are unique from something already existing in the database.
 
 ```{r}
 dplyr::tbl(db_connection$my_new_database,

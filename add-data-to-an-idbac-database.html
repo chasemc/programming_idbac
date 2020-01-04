@@ -132,7 +132,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1" data-path=""><a href="#add-data-to-an-idbac-database"><i class="fa fa-check"></i><b>1</b> Add Data to an IDBac Database</a><ul>
 <li class="chapter" data-level="1.1" data-path=""><a href="#make-a-new-empty-idbac-database"><i class="fa fa-check"></i><b>1.1</b> Make a new empty IDBac database</a></li>
 <li class="chapter" data-level="1.2" data-path=""><a href="#add-data-from-an-mzxml-file"><i class="fa fa-check"></i><b>1.2</b> Add data from an mzXML file</a></li>
-<li class="chapter" data-level="1.3" data-path=""><a href="#now-add-the-rest-of-the-mzxml-files"><i class="fa fa-check"></i><b>1.3</b> Now add the rest of the mzXML files</a></li>
+<li class="chapter" data-level="1.3" data-path=""><a href="#adding-multiple-mzxml-files"><i class="fa fa-check"></i><b>1.3</b> Adding multiple mzXML files</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -220,8 +220,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2><span class="header-section-number">1.2</span> Add data from an mzXML file</h2>
 <p>First let’s add just a single xml file</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">mz_file_paths &lt;-<span class="st"> </span>IDBacApp<span class="op">::</span><span class="kw">find_mz_files</span>(<span class="dt">path =</span> here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;mzxml&quot;</span>),</a>
-<a class="sourceLine" id="cb14-2" title="2">                                       <span class="dt">recursive =</span> <span class="ot">FALSE</span>,</a>
-<a class="sourceLine" id="cb14-3" title="3">                                     <span class="dt">full =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb14-2" title="2">                                         <span class="dt">recursive =</span> <span class="ot">FALSE</span>,</a>
+<a class="sourceLine" id="cb14-3" title="3">                                         <span class="dt">full =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb14-4" title="4"><span class="co"># only use one</span></a>
 <a class="sourceLine" id="cb14-5" title="5">mz_file_paths &lt;-<span class="st"> </span>mz_file_paths[[<span class="dv">1</span>]]</a>
 <a class="sourceLine" id="cb14-6" title="6"></a>
@@ -324,24 +324,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 5 22b22a5… &lt;raw 2.16 MB&gt; Bruker Dalt… Bruk… matrix-as… time-of… microch…
 ## # … with 1 more variable: instrument_metafile &lt;chr&gt;</code></pre>
 </div>
-<div id="now-add-the-rest-of-the-mzxml-files" class="section level2">
-<h2><span class="header-section-number">1.3</span> Now add the rest of the mzXML files</h2>
+<div id="adding-multiple-mzxml-files" class="section level2">
+<h2><span class="header-section-number">1.3</span> Adding multiple mzXML files</h2>
+<p>It is also possible to add multiple mzXML/mzML files at once, simply pass multiple paths and names as character vectors to <code>IDBacApp::process_mzml()</code>.</p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">mz_file_paths &lt;-<span class="st"> </span>IDBacApp<span class="op">::</span><span class="kw">find_mz_files</span>(<span class="dt">path =</span> here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;mzxml&quot;</span>),</a>
-<a class="sourceLine" id="cb31-2" title="2">                                       <span class="dt">recursive =</span> <span class="ot">FALSE</span>,</a>
-<a class="sourceLine" id="cb31-3" title="3">                                     <span class="dt">full =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb31-2" title="2">                                         <span class="dt">recursive =</span> <span class="ot">FALSE</span>,</a>
+<a class="sourceLine" id="cb31-3" title="3">                                         <span class="dt">full =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb31-4" title="4"><span class="kw">print</span>(mz_file_paths)</a></code></pre></div>
 <pre><code>## [1] &quot;C:/Users/CMC/Documents/GitHub/programming_idbac/data/mzxml/172-1.mzXML&quot; 
 ## [2] &quot;C:/Users/CMC/Documents/GitHub/programming_idbac/data/mzxml/172-10.mzXML&quot;
 ## [3] &quot;C:/Users/CMC/Documents/GitHub/programming_idbac/data/mzxml/172-11.mzXML&quot;
 ## [4] &quot;C:/Users/CMC/Documents/GitHub/programming_idbac/data/mzxml/172-7.mzXML&quot; 
 ## [5] &quot;C:/Users/CMC/Documents/GitHub/programming_idbac/data/mzxml/Matrix.mzXML&quot;</code></pre>
-<p>Get the name:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">mz_file_name &lt;-<span class="st"> </span>base<span class="op">::</span><span class="kw">basename</span>(tools<span class="op">::</span><span class="kw">file_path_sans_ext</span>(mz_file_paths))</a>
+<p>Names we will use:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">mz_file_names &lt;-<span class="st"> </span>base<span class="op">::</span><span class="kw">basename</span>(tools<span class="op">::</span><span class="kw">file_path_sans_ext</span>(mz_file_paths))</a>
 <a class="sourceLine" id="cb33-2" title="2"></a>
-<a class="sourceLine" id="cb33-3" title="3"><span class="kw">print</span>(mz_file_name)</a></code></pre></div>
+<a class="sourceLine" id="cb33-3" title="3"><span class="kw">print</span>(mz_file_names)</a></code></pre></div>
 <pre><code>## [1] &quot;172-1&quot;  &quot;172-10&quot; &quot;172-11&quot; &quot;172-7&quot;  &quot;Matrix&quot;</code></pre>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">IDBacApp<span class="op">::</span><span class="kw">process_mzml</span>(<span class="dt">mzFilePaths =</span> mz_file_paths,</a>
-<a class="sourceLine" id="cb35-2" title="2">                       <span class="dt">sampleIds =</span> mz_file_name,</a>
+<a class="sourceLine" id="cb35-2" title="2">                       <span class="dt">sampleIds =</span> mz_file_names,</a>
 <a class="sourceLine" id="cb35-3" title="3">                       <span class="dt">sqlDirectory =</span> sqlDirectory<span class="op">$</span>sqlDirectory,</a>
 <a class="sourceLine" id="cb35-4" title="4">                       <span class="dt">idbac_pool =</span> db_connection<span class="op">$</span>my_new_database,</a>
 <a class="sourceLine" id="cb35-5" title="5">                       <span class="dt">acquisitionInfo =</span> <span class="ot">NULL</span>)</a></code></pre></div>
