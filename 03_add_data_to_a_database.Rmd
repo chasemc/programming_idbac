@@ -1,0 +1,35 @@
+# Add Data to an IDBac Database
+
+
+So, we've already seen how to connect to an existing IDBac database, and what an IDBac database consists of. In this section we'll learn how to add our own data to a new, or exisisting, IDBac database.
+
+
+```{r}
+library(here)
+```
+
+
+```{r}
+
+mzxml_dir <- here::here("data", "mzxml")
+dir.create(mzxml_dir)
+
+mzxml_files <- c("172-1.mzXML",
+                 "172-7.mzXML",
+                 "172-10.mzXML",
+                 "172-11.mzXML",
+                 "Matrix.mzXML")
+
+if (any(!file.exists(mzxml_files))) { #cache  mzxml fetch
+  
+  for (i in mzxml_files) {
+    download.file(url = paste0("ftp://massive.ucsd.edu/MSV000084291/raw/data/mzXML/", i),
+                  destfile = here::here("data", "mzxml", i),
+                  mode = "wb")
+  }
+}
+
+
+```
+
+

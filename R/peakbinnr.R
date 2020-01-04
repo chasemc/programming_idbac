@@ -1,0 +1,100 @@
+createFuzzyVector <- function(massStart,
+         massEnd,
+         ppm,
+         massList,
+         intensityList){
+
+
+
+  scale_ppm <- function(mass,
+                        ppm){
+    1L / ((ppm / 1000000L) * mass)
+  }
+
+
+  binner_xShift <- function(massStart,
+                            scaler){
+    round((massStart*scaler) - 2)
+  }
+
+
+  scaler <- scale_ppm(ppm = ppm,
+                      mass = massStart)
+
+  toSub <- binner_xShift(massStart = massStart,
+                         scaler = scaler)
+
+
+  z1 <- as.integer(round((massEnd * scaler)))
+  z2 <- as.integer(round((massEnd * ppm) / 1000000L))
+  vecLength <- z1 + z2 + 2
+
+  #  if (length(massList) * vecLength < 4e6) {
+#  builtM <- base::matrix(0, nrow = length(massList), ncol = vecLength)
+  #  } else {
+      builtM <- Matrix::Matrix(0, ncol = length(massList), nrow = vecLength, sparse = TRUE)
+  #  }
+
+  # mm returns a list of lists. each list element contains a list of length 3:
+  # 1- centroid - ppm
+  # 2- centroid
+  # 3- centroid + ppm
+  mm <- lapply(massList, function(x){
+    # scale and shift to begin at 1
+    #z1 <- as.integer(round((x * scaler) - toSub))
+    z1 <- as.integer(round((x * scaler)))
+    z2 <- as.integer(round(((x * ppm) / 1000000L)*scaler))
+
+    list(z1 - z2,
+         z1,
+         z1 + z2)
+
+  })
+
+  # Create a distribution of "intensity" across each ppm range of each peak
+  # loop across all samples (spectra)
+  for (i in seq_along(mm)) {
+
+    # For each centroid, create a sequence of integers from
+    # (centroid mass - ppm) to (centroid mass + ppm)
+    z <- mapply(function(x, y) {x:y},
+                mm[[i]][[1]],
+                mm[[i]][[3]], SIMPLIFY = F)
+
+    # For each centroid we now have a sequence of integers representing uncertainty of the centroid
+    # model normal distribution density across each centroid's uncertainty integer vector
+    z2 <- mapply(
+      function(x,y,z){
+        round(dnorm(x,
+                    y,
+                    (z - y) / 4),
+              digits = 4)
+      },
+      z,
+      mm[[i]][[2]],
+      mm[[i]][[3]],
+      SIMPLIFY = FALSE)
+
+    # Multiple each centroid's intensity against its above calculated distribution
+    #z3 <-  mapply(function(x, y) x * y, z2, intensityList[[i]])
+    z3 <-  mapply(function(x, y) x * y,
+                  z2,
+                  1000,
+                  SIMPLIFY = FALSE)
+
+    if(!class(z3) == "list") {
+      z3 <- list(z3)
+    }
+
+    for (ii  in seq_along(z)){
+
+      builtM[z[[ii]], i] <- builtM[z[[ii]], i] + (z3[[ii]])
+
+    }
+  }
+
+  rownames(builtM) <- names(massList)
+
+  return(builtM)
+
+}

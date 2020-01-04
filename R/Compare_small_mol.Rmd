@@ -1,0 +1,153 @@
+---
+title: "Compare_small_mol"
+output: html_document
+---
+
+
+
+```{r setup}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(IDBacApp)
+library(DBI) # This is a dependency of IDBacApp as well
+library(dplyr)
+```
+
+
+Connect to IDBac experiment file (database file):
+```{r}
+
+sql_loc <- "F:/Chase/Projects/Sponge/Isolate_Drug_Discovery/untargeted_isolate_discovery/2019-09-17/for_idbac"
+
+sql_db <- IDBacApp::createPool("for_idbac",
+                               sql_loc)
+# createPool() returns a list of pools, here we only provided one
+# experiment so we only need the first pool
+sql_db <- sql_db[[1]]
+
+```
+
+Check that there are tables in the database:
+```{r}
+DBI::dbListTables(sql_db)
+
+```
+
+
+```{r}
+con <- pool::poolCheckout(sql_db)
+
+```
+
+
+
+```{r}
+dplyr::tbl(con, "IndividualSpectra") %>% 
+  filter(maxMass < 10000) %>% 
+  select(Strain_ID) %>% 
+  collect -> p
+p2 <- unname(unlist(p))
+```
+
+
+
+```{r}
+spec <- mquantSpecFromSQL(checkedPool = con,
+                          sampleID = c(unique(p2)), 
+                          proteinOrSmall = "<")
+
+```
+
+```{r}
+names(spec) <- p2
+```
+
+
+
+
+
+```{r}
+summed <- MALDIquant::averageMassSpectra(spec, factor(p2), method = "sum")
+```
+
+```{r}
+plot(summed$'137-I', xlim=c(800, 850), ylim = c(0, 5000))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+pd <- lapply(unique(p2), function(x){
+  
+  IDBacApp::collapseReplicates(checkedPool = con,
+                               sampleIDs = x,
+                               peakPercentPresence = 45,
+                               lowerMassCutoff = 50,
+                               upperMassCutoff = 3000, 
+                               minSNR = 5, 
+                               tolerance = 0.002,
+                               protein = FALSE)
+})
+
+names(pd) <- unique(p2)
+
+```
+
+
+
+
+```{r}
+
+pd2 <- MALDIquant::binPeaks(pd)
+pd2 <- MALDIquant::intensityMatrix(pd2)
+
+```
+
+
+```{r}
+pd2[is.na(pd2)] <- 0
+```
+
+
+```{r}
+
+z <- FactoMineR::PCA(pd2)
+
+```
+
+
+```{r}
+factoextra::fviz_pca_biplot(pd2,  repel = TRUE)
+
+```
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

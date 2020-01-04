@@ -1,0 +1,23 @@
+---
+title: "Random"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For a certain strain, see the acquisition date, method path, and the number of data points
+```{r}
+
+library(dplyr)
+a <- "F:/Chase/Projects/R01/data"
+b <- IDBacApp::createPool("bigGuy",
+                          a)[[1]]
+b %>%
+    tbl("IndividualSpectra") %>%
+    filter(Strain_ID == "BS3610") %>% 
+    filter(maxMass > 10000) %>% 
+    select(c(acquisitionMethod, acquisitionDate,  number)) %>% collect ->p
+```
+

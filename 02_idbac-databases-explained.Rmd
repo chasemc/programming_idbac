@@ -1,0 +1,154 @@
+
+# IDBac Databases Explained
+
+
+Load necessary packages for this tutorial:
+```{r eval=TRUE, message=FALSE, warning=FALSE, include=TRUE}
+library(IDBacApp)
+# dplyr is for easily working with SQLite databases
+library(dplyr)
+# DBI is used to communicate with SQLite databases
+library(DBI)
+# pool manages SQLite database connections
+library(pool)
+```
+
+
+First, download the example `idbac_experiment_file.sqlite` file.
+
+
+
+Connect to the database
+
+
+```{r}
+example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
+                                     filePath = here::here("data",
+                                                "example_data"))
+
+```
+
+To get our pool object let's pull it out of the list.
+```{r}
+# example_pool$idbac_experiment_file would also work 
+example_pool <- example_pool[[1]]
+class(example_pool)
+```
+
+## Database Tables
+
+IDBac has 6 tables which we'll go through one by one.
+
+```{r}
+cat(rev(DBI::dbListTables(example_pool)),
+    sep = "\n")
+```
+
+
+### The `Version` table
+```{r}
+dplyr::tbl(example_pool,
+           "Version")
+```
+
+This table contains two fields `IDBacVersion` and `rVersion`.
+
+`IDBacVersion`  is the version of IDBac that was used to create the database
+`rVersion` contains information on the version of R used to create the database. It is a JSON string and can be easily parsed using the `{JSONlite}` R package (among many others).
+
+```{r}
+a <- dplyr::tbl(example_pool,
+           "Version") %>% collect()
+
+jsonlite::fromJSON(a$rVersion)
+```
+
+
+
+
+
+
+### The `locale` table
+```{r}
+dplyr::tbl(example_pool,
+           "locale")
+```
+
+This table can be ignored. It stores the encodings used when creating the database. Its only real purpose is for debugging. 
+
+
+### The `metaData` table
+```{r}
+dplyr::tbl(example_pool,
+           "metaData")
+```
+
+This table starts out empty except for the field `Strain_ID`. It is to be filled in by the user, usually using the IDBac Shiny interface. It contains "extra" information about each sample.
+
+
+
+
+
+
+### The `massTable` table
+```{r}
+dplyr::tbl(example_pool,
+           "massTable")
+```
+
+
+This is a good time to explain some (very) basic SQL and hashing, I will try to keep things simple and accessible. 
+
+SQL is pretty cool because it allows you to structure your data to "hopefully" store things a minimum number of times. So we can store a data point once even if it relates to multiple other points- as long as we can reference this relationship. When retrieving results we merge mutliple tables together using these references and voila!
+
+In the case of `massTable` I noticed that, at least on the Bruker autoFlex instruments, all data collected using the same settings will contain the same exact `m/z` values for a mass spectrum. This means that, while we do have to store intensity values for every spectrum, we can potentially save space by only soring uniquee `m/z` vectors (the `massVector` field).
+
+
+That brings us to the field `spectrumMassHash`. This is a short representation of the mass vectors that allows us to quickly reference a specfic mass vector as well as determine if a `massVector` is the same or different to a `massVector` already stored in the database. The importance of this will be more apparant later.
+
+
+
+
+
+### The `XML` table
+```{r}
+dplyr::tbl(example_pool,
+           "XML")
+```
+
+The `XML` table stores the mzML (or mzXML of that was the input type) files and some basic information about the instrument if that information was available (e.g. information won't be present if spectra were converted from txt files). The `XML` field contains the compressed mzML/mzXML file, in full.
+
+
+
+### The `IndividualSpectra` table
+```{r}
+dplyr::tbl(example_pool,
+           "IndividualSpectra")
+```
+
+
+And a full list of columns:
+
+```{r}
+a <- dplyr::tbl(example_pool,
+           "IndividualSpectra")
+
+colnames(a)
+```
+
+This is, inarguably, the most important table of the database. It is sample-level data (each row represents a single spectrum) and includes data like: `spectrumIntensity`, peak data `peakMatrix`, `maxMass`, `minMass`, etc.
+
+The input for many of the fields (e.g. `massError`, `tofMode`) are extracted from Bruker's `acqus` files and so will only be present if you used IDBac to process Bruker raw data files directly.
+
+
+
+## How do I use this????
+
+Please see the other vignettes to see how make use of the databases. 
+
+
+
+
+
+
+

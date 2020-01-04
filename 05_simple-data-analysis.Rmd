@@ -1,0 +1,234 @@
+
+# Simple Analysis
+
+
+Load necessary packages for this tutorial:
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(IDBacApp)
+library(dplyr)
+library(DBI)
+library(pool)
+library(sda)
+```
+
+
+If you haven't already, connect to an IDBac database as shown in "01_connect-to-idbac-database".
+Connect to the database
+
+
+```{r}
+example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
+                                     filePath = here::here("data",
+                                                "example_data"))
+
+```
+
+To get our pool object let's pull it out of the list.
+```{r}
+# example_pool$idbac_experiment_file would also work 
+example_pool <- example_pool[[1]]
+class(example_pool)
+```
+
+
+## Check database
+
+What samples are in the database?
+```{r}
+
+dplyr::tbl(example_pool, "IndividualSpectra") %>%  # Specifiy database and table to get data from
+select("Strain_ID") %>% # Select "Strain_ID" field/column
+  distinct() # Only show unique strain ids
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+my_plot <- IDBacApp::assembleMirrorPlots(sampleID1 = "172-7",
+                                         sampleID2 = "172-10",
+                                         peakPercentPresence = 0.7,
+                                         lowerMassCutoff = 3000,
+                                         upperMassCutoff = 15000,
+                                         minSNR = 4, 
+                                         tolerance = 0.002,
+                                         pool1 = example_pool,
+                                         pool2 = example_pool)
+IDBacApp::mirrorPlot(my_plot)
+
+```
+
+The interactive graph above can be slow to generate with larger data. IDBac also has a base-R implementation that is faster to create but is non-interactive/static:
+```{r}
+IDBacApp::baserMirrorPlot(my_plot)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We'll leave the replicates in right now:
+```{r}
+
+my_peaks <- IDBacApp::collapseReplicates(pool = example_pool,
+                                         sampleIDs = c("172-10", "172-7", "172-1", "172-11"),
+                                         peakPercentPresence = 0.6,
+                                         lowerMassCutoff = 3000,
+                                         upperMassCutoff = 15000, 
+                                         minSNR = 4, 
+                                         tolerance = 0.002,
+                                         protein = TRUE)
+
+
+
+my_fuzz <- IDBacApp::createFuzzyVector(massStart = 3000,
+                                       massEnd = 15000,
+                                       ppm = 500,
+                                       massList = lapply(my_peaks, function(x) x@mass),
+                                       intensityList = lapply(my_peaks, function(x) x@intensity))
+
+```
+
+`my_fuzz` is now a high-dimensional representation of your peaks and the given ppm tolerance
+```{r}
+plot(my_fuzz[,1], type = "l")
+plot(my_fuzz[,1], type = "l", xlim=c(4500,5000))
+points(my_fuzz[,1], xlim=c(4500,5000))
+```
+
+...and you can use this for things like calculating cosine similarity, creating dendrograms, etc.
+
+```{r}
+1 - coop::cosine(my_fuzz)
+```
+
+
+
+**Note!**
+`IDBacApp::createFuzzyVector()` returns a sparse matrix which requires some special handling and the high-dimensional nature of this may break algorithms that don't work well with sparse-matrices.
+```{r}
+class(my_fuzz)
+```
+
+### PCA
+Notice how most of the variation here (PC1) separates *Paenibacillus* strains (172-10 and 172-7) from the *Rhodococcus* strains (172-1 and 172-11). PC2 seems to contain information relating to differences between the two *Paenibacillus* strains.
+```{r}
+w <- stats::prcomp(Matrix::t(my_fuzz), center = T)
+
+plot(w$x, xlim = c(-5000,5000), ylim = c(-5000,5000))
+text(w$x, colnames(my_fuzz))
+```
+
+### UMAP (Note: really shouldn't use with this few of samples)
+```{r}
+my_dist <- as.dist(coop::cosine(my_fuzz))
+
+w <- uwot::umap(my_dist, n_neighbors =2)
+
+plot(w)
+text(w, attributes(my_dist)$Labels)
+```
+
+### Principle coordinates analysis (PCoA)
+```{r}
+w <- IDBacApp::pcoaCalculation( as.dist(1 - coop::cosine(my_fuzz))) #Note the subtraction from 1
+plot(w$Dim1, w$Dim2)
+text(w$Dim1, w$Dim2, w$nam)
+```
+
+
+
+Want to do something like you see in the {MALDIquant} documentation?
+
+Examples below are from:
+https://github.com/sgibb/MALDIquantExamples/
+Specifically: https://github.com/sgibb/MALDIquantExamples/blob/master/inst/doc/species.pdf?raw=true
+
+```{r}
+names(my_peaks)
+```
+
+
+```{r}
+
+my_peaks <- IDBacApp::collapseReplicates(pool = example_pool,
+                                         sampleIDs = c("172-10", "172-7", "172-1", "172-11"),
+                                         peakPercentPresence = 0.6,
+                                         lowerMassCutoff = 3000,
+                                         upperMassCutoff = 15000, 
+                                         minSNR = 4, 
+                                         tolerance = 0.002,
+                                         protein = TRUE)
+
+my_peaks <- MALDIquant::binPeaks(my_peaks)
+ species <- factor(c("Paenibacillus", "Paenibacillus","Rhodococcus", "Rhodococcus"))
+
+
+featureMatrix <- MALDIquant::intensityMatrix(my_peaks)
+rownames(featureMatrix) <- paste(species,
+                  names(my_peaks), sep=".")
+featureMatrix[is.na(featureMatrix)] <- 0.001
+
+ddar <- sda.ranking(Xtrain=featureMatrix, L=species, fdr=FALSE, diagonal=T)
+
+```
+
+```{r}
+plot(ddar)
+```
+
+
+
+```{r}
+ldar <- sda.ranking(Xtrain=featureMatrix, L=species,
+fdr=FALSE, diagonal=FALSE)
+```
+
+```{r}
+plot(ldar)
+```
+
