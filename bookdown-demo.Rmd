@@ -82,28 +82,15 @@ library(IDBacApp)
 
 Here we will make a connection to the database. 
 
-Under the hood IDBac uses the `{pool}` package and some IDBac functions expect a `pool` object and thus it is the preferred method besides `IDBacApp::createPool()`
+Under the hood IDBac uses the `{pool}` package and some IDBac functions expect a `pool` object and thus it is the preferred way to handle IDBac databases from within R.
 
 
 ```{r}
-example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
-                                     filePath = here::here("data",
-                                                "example_data"))
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
 
 ```
-
-Besides IDBacApp::createPool(),
-```
-DBI::dbConnect(RSQLite::SQLite(), 
-ex_path)
-```
-or
-```
-pool::dbPool(drv = RSQLite::SQLite(),
-dbname = ex_path)
-```
-can also be used. 
-
 
 
 Notice that this isn't a pool object, it's a list (this is for a reason- it helps the IDBac Shiny app make multiple connections).
@@ -147,9 +134,9 @@ Connect to the database
 
 
 ```{r}
-example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
-                                     filePath = here::here("data",
-                                                "example_data"))
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
 
 ```
 
@@ -285,11 +272,18 @@ Please see the other vignettes to see how make use of the databases.
 
 So, we've already seen how to connect to an existing IDBac database, and what an IDBac database consists of. In this section we'll learn how to add our own data to a new, or exisisting, IDBac database.
 
+```{r}
+library(dplyr)
+```
+
 
 ```{r}
 library(here)
 ```
 
+
+
+## Make a new empty IDBac database
 
 ```{r include=FALSE}
 
@@ -315,12 +309,155 @@ if (any(!file.exists(here::here('data', 'mzxml', mzxml_files)))) { #cache  mzxml
 ```
 
 
-We have five mzXML files in the folder: `r here::here("data")`
+We have five mzXML files in folder: `~data/mzxml`
+
 ```{r}
+list.files(here::here("data", "mzxml"))
+```
+
+
+
+Create a new, empty, database named `my_new_database` in `~data/databases`
+```{r message=FALSE, warning=FALSE}
+
+IDBacApp::idbac_create(fileName = "my_new_database",
+                       filePath = here::here("data",
+                                             "databases"))
+
+```
+
+Connect to the new database
+```{r}
+db_connection <- IDBacApp::idbac_connect(fileName = "my_new_database",
+                                         filePath = here::here("data",
+                                                               "databases"))
+```
+
+
+It is indeed empty:
+
+```{r}
+dplyr::tbl(db_connection$my_new_database,
+           "spectra")
+
 
 ```
 
 
+
+## Add data from an mzXML file
+
+
+First let's add just a single xml file
+
+
+
+
+```{r}
+mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
+                                       recursive = FALSE,
+                                     full = TRUE)
+# only use one
+mz_file_paths <- mz_file_paths[[1]]
+
+print(mz_file_paths)
+```
+
+Get the name:
+```{r}
+mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
+
+print(mz_file_name)
+
+```
+
+
+```{r}
+
+mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
+
+
+
+IDBacApp::process_mzml(mzFilePaths = here::here("data", "mzxml", paste0(mz_file_name, ".mzXML")),
+                       sampleIds = mz_file_name,
+                       sqlDirectory = sqlDirectory$sqlDirectory,
+                       idbac_pool = db_connection$my_new_database,
+                       acquisitionInfo = NULL)
+
+```
+
+
+Looking at what is contained within the database we see that four spectra were added to the table `spectra`.
+
+```{r}
+dplyr::tbl(db_connection$my_new_database, "spectra")
+```
+
+One row was added in the table `metadata`.
+```{r}
+dplyr::tbl(db_connection$my_new_database, "metadata")
+```
+
+Two rows were added in the table `mass_index` (one for the reflectron spectra and one for the protein spectra).
+
+```{r}
+dplyr::tbl(db_connection$my_new_database, "mass_index")
+```
+
+One row was added in the table `xml`. This contains the original mzXML file.
+```{r}
+dplyr::tbl(db_connection$my_new_database, "xml")
+```
+
+
+
+## Now add the rest of the mzXML files
+
+
+```{r}
+mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
+                                       recursive = FALSE,
+                                     full = TRUE)
+print(mz_file_paths)
+```
+
+Get the name:
+```{r}
+mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
+
+print(mz_file_name)
+
+```
+
+
+```{r}
+IDBacApp::process_mzml(mzFilePaths = mz_file_paths,
+                       sampleIds = mz_file_name,
+                       sqlDirectory = sqlDirectory$sqlDirectory,
+                       idbac_pool = db_connection$my_new_database,
+                       acquisitionInfo = NULL)
+
+```
+
+
+We can see below that this has now added data for all of the mzXML files given.  
+
+Important things to note:
+  
+  1. The data from `172-1` was only added the first time. IDBac only appends data, it *never* overwrites data in the database (except in the metadata table). IDBac looks at each spectrum_mass_hash, spectrum_intensity_hash, and strain_id and only creates a new entry if those are unique from something already existing in the database.
+
+```{r}
+dplyr::tbl(db_connection$my_new_database,
+           "spectra")
+```
+
+
+The `mass-index` table remains the same because in this case all the data had the same mass values across all protein and small molecule spectra.
+
+```{r}
+dplyr::tbl(db_connection$my_new_database,
+           "mass_index")
+```
 
 <!--chapter:end:03_add_data_to_a_database.Rmd-->
 
@@ -343,9 +480,9 @@ Connect to the database
 
 
 ```{r}
-example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
-                                     filePath = here::here("data",
-                                                "example_data"))
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
 
 ```
 
