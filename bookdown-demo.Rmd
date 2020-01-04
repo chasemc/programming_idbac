@@ -68,7 +68,6 @@ if (!file.exists(here::here("data",
 
 <!--chapter:end:index.Rmd-->
 
-
 # Connect to an IDBac Database
 
 
@@ -122,7 +121,7 @@ class(example_pool)
 
 You should now be connected to an IDBac experiment/database!
 
-<!--chapter:end:01_connect-to-database.Rmd-->
+<!--chapter:end:01_connect-to-an_existing_database.Rmd-->
 
 
 # IDBac Databases Explained
@@ -280,6 +279,50 @@ Please see the other vignettes to see how make use of the databases.
 
 
 <!--chapter:end:02_idbac-databases-explained.Rmd-->
+
+# Add Data to an IDBac Database
+
+
+So, we've already seen how to connect to an existing IDBac database, and what an IDBac database consists of. In this section we'll learn how to add our own data to a new, or exisisting, IDBac database.
+
+
+```{r}
+library(here)
+```
+
+
+```{r include=FALSE}
+
+mzxml_dir <- here::here("data", "mzxml")
+dir.create(mzxml_dir)
+
+mzxml_files <- c("172-1.mzXML",
+                 "172-7.mzXML",
+                 "172-10.mzXML",
+                 "172-11.mzXML",
+                 "Matrix.mzXML")
+
+if (any(!file.exists(here::here('data', 'mzxml', mzxml_files)))) { #cache  mzxml fetch
+  
+  for (i in mzxml_files) {
+    download.file(url = paste0("ftp://massive.ucsd.edu/MSV000084291/raw/data/mzXML/", i),
+                  destfile = here::here("data", "mzxml", i),
+                  mode = "wb")
+  }
+}
+
+
+```
+
+
+We have five mzXML files in the folder: `r here::here("data")`
+```{r}
+
+```
+
+
+
+<!--chapter:end:03_add_data_to_a_database.Rmd-->
 
 
 # Simple Analysis

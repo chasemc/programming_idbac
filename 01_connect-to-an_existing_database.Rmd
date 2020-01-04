@@ -12,28 +12,15 @@ library(IDBacApp)
 
 Here we will make a connection to the database. 
 
-Under the hood IDBac uses the `{pool}` package and some IDBac functions expect a `pool` object and thus it is the preferred method besides `IDBacApp::createPool()`
+Under the hood IDBac uses the `{pool}` package and some IDBac functions expect a `pool` object and thus it is the preferred way to handle IDBac databases from within R.
 
 
 ```{r}
-example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
-                                     filePath = here::here("data",
-                                                "example_data"))
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
 
 ```
-
-Besides IDBacApp::createPool(),
-```
-DBI::dbConnect(RSQLite::SQLite(), 
-ex_path)
-```
-or
-```
-pool::dbPool(drv = RSQLite::SQLite(),
-dbname = ex_path)
-```
-can also be used. 
-
 
 
 Notice that this isn't a pool object, it's a list (this is for a reason- it helps the IDBac Shiny app make multiple connections).

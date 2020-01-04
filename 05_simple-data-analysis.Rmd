@@ -17,9 +17,9 @@ Connect to the database
 
 
 ```{r}
-example_pool <- IDBacApp::createPool(fileName = "idbac_experiment_file",
-                                     filePath = here::here("data",
-                                                "example_data"))
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
 
 ```
 
