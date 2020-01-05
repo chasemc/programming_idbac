@@ -3,8 +3,11 @@ bookdown::gitbook:
   config:
     toc:
       before: |
-        <li><a href="./">A Minimal Book Example</a></li>
+        <li><a href="./">Programming With IDBac</a></li>
       after: |
+        <li><a href="https://chasemc.github.io/IDBac" target="blank">IDBac Website</a></li>
+        <li><a href="https://doi.org/10.1073/pnas.1801247115" target="blank">IDBac PNAS Publication</a></li>
+        <li><a href="http://dx.doi.org/10.3791/59219" target="blank">IDBac Video Protocol</a></li>
         <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
     edit: https://github.com/rstudio/bookdown-demo/edit/master/%s
     download: ["pdf", "epub"]
