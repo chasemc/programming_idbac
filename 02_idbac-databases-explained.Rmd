@@ -58,11 +58,16 @@ This table contains two fields `IDBacVersion` and `rVersion`.
 
 ```{r}
 a <- dplyr::tbl(example_pool,
-           "Version") %>% collect()
+           "version") %>% collect()
 
-jsonlite::fromJSON(a$rVersion)
+jsonlite::fromJSON(a$r_version)
 ```
 
+There is also a helper function to get the IDBac/database version:
+```{r}
+IDBacApp::get_db_version(example_pool)
+
+```
 
 
 
@@ -77,10 +82,10 @@ dplyr::tbl(example_pool,
 This table can be ignored. It stores the encodings used when creating the database. Its only real purpose is for debugging. 
 
 
-### The `metaData` table
+### The `metadata` table
 ```{r}
 dplyr::tbl(example_pool,
-           "metaData")
+           "metadata")
 ```
 
 This table starts out empty except for the field `Strain_ID`. It is to be filled in by the user, usually using the IDBac Shiny interface. It contains "extra" information about each sample.
@@ -90,10 +95,10 @@ This table starts out empty except for the field `Strain_ID`. It is to be filled
 
 
 
-### The `massTable` table
+### The `mass_index` table
 ```{r}
 dplyr::tbl(example_pool,
-           "massTable")
+           "mass_index")
 ```
 
 
@@ -101,7 +106,7 @@ This is a good time to explain some (very) basic SQL and hashing, I will try to 
 
 SQL is pretty cool because it allows you to structure your data to "hopefully" store things a minimum number of times. So we can store a data point once even if it relates to multiple other points- as long as we can reference this relationship. When retrieving results we merge mutliple tables together using these references and voila!
 
-In the case of `massTable` I noticed that, at least on the Bruker autoFlex instruments, all data collected using the same settings will contain the same exact `m/z` values for a mass spectrum. This means that, while we do have to store intensity values for every spectrum, we can potentially save space by only soring uniquee `m/z` vectors (the `massVector` field).
+In the case of `mass_index` I noticed that, at least on the Bruker autoFlex instruments, all data collected using the same settings will contain the same exact `m/z` values for a mass spectrum. This means that, while we do have to store intensity values for every spectrum, we can potentially save space by only soring uniquee `m/z` vectors (the `massVector` field).
 
 
 That brings us to the field `spectrumMassHash`. This is a short representation of the mass vectors that allows us to quickly reference a specfic mass vector as well as determine if a `massVector` is the same or different to a `massVector` already stored in the database. The importance of this will be more apparant later.
@@ -110,20 +115,20 @@ That brings us to the field `spectrumMassHash`. This is a short representation o
 
 
 
-### The `XML` table
+### The `xml` table
 ```{r}
 dplyr::tbl(example_pool,
-           "XML")
+           "xml")
 ```
 
-The `XML` table stores the mzML (or mzXML of that was the input type) files and some basic information about the instrument if that information was available (e.g. information won't be present if spectra were converted from txt files). The `XML` field contains the compressed mzML/mzXML file, in full.
+The `xml` table stores the mzML (or mzxml of that was the input type) files and some basic information about the instrument if that information was available (e.g. information won't be present if spectra were converted from txt files). The `xml` field contains the compressed mzML/mzxml file, in full.
 
 
 
-### The `IndividualSpectra` table
+### The `spectra` table
 ```{r}
 dplyr::tbl(example_pool,
-           "IndividualSpectra")
+           "spectra")
 ```
 
 
@@ -131,7 +136,7 @@ And a full list of columns:
 
 ```{r}
 a <- dplyr::tbl(example_pool,
-           "IndividualSpectra")
+           "spectra")
 
 colnames(a)
 ```
