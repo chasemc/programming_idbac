@@ -36,8 +36,8 @@ class(example_pool)
 What samples are in the database?
 ```{r}
 
-dplyr::tbl(example_pool, "IndividualSpectra") %>%  # Specifiy database and table to get data from
-select("Strain_ID") %>% # Select "Strain_ID" field/column
+dplyr::tbl(example_pool, "spectra") %>%  # Specifiy database and table to get data from
+select("strain_id") %>% # Select "Strain_ID" field/column
   distinct() # Only show unique strain ids
 
 ```

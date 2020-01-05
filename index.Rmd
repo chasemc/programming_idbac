@@ -65,3 +65,23 @@ if (!file.exists(here::here("data",
 
 
 
+This IDBac database is from one of the first versions of IDBac:
+
+```{r}
+example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
+                                        filePath = here::here("data",
+                                                              "example_data"))
+IDBacApp::get_db_version(example_pool$idbac_experiment_file)
+```
+
+
+We can update it as below:
+
+```{r}
+IDBacApp::update_database_version(example_pool$idbac_experiment_file)
+```
+
+
+
+
+
