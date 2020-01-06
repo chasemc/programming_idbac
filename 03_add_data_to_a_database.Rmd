@@ -111,7 +111,7 @@ mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
 
 IDBacApp::process_mzml(mzFilePaths = here::here("data", "mzxml", paste0(mz_file_name, ".mzXML")),
                        sampleIds = mz_file_name,
-                       idbac_pool = db_connection$my_new_database,
+                       idbacPool = db_connection$my_new_database,
                        acquisitionInfo = NULL)
 
 ```
@@ -164,7 +164,7 @@ print(mz_file_names)
 ```{r}
 IDBacApp::process_mzml(mzFilePaths = mz_file_paths,
                        sampleIds = mz_file_names,
-                       idbac_pool = db_connection$my_new_database,
+                       idbacPool = db_connection$my_new_database,
                        acquisitionInfo = NULL)
 
 ```
