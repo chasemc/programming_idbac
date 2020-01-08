@@ -11,15 +11,21 @@ library(reticulate)
 # install pandas
 conda_install("r-reticulate", "pandas")
 conda_install("r-reticulate", "plotly")
-#reticulate::use_condaenv("r-C:\Users\CMC\AppData\Local\R-MINI~1\envsreticulate")
+
+conda_install("r-reticulate", "zstd")
+reticulate::use_condaenv("r-reticulate")
+
+reticulate::conda_install("r-reticulate","zstandard")
 
 ```
+
 
 
 ```{python}
 import sqlite3
 import json
 import pandas as pd
+import zstandard as zstd
 ```
 
 ```{python}
@@ -65,12 +71,51 @@ print(peaks)
 
 
 ```{python}
-df = pd.read_sql_query('SELECT peak_matrix FROM spectra WHERE strain_id=:spec', conn, params = {'spec':'172-1'})
-js = df.iloc[0,0]
-peaks = json.loads(js)
-peaks = pd.DataFrame.from_dict(peaks)
-print(peaks)
+sql = ('SELECT mass_index.mass_vector, spectra.spectrum_intensity '
+       'FROM mass_index '
+       'LEFT JOIN spectra '
+       'ON mass_index.spectrum_mass_hash = spectra.spectrum_mass_hash '
+       'WHERE strain_id=:spec '
+       'AND max_mass > 6000 ')
+       
+       
+       
+
+       
+       
+       
+       
+
+df = pd.read_sql_query(sql, conn, params = {'spec':'172-1'})
+
 ```
+
+
+
+
+```{python}
+df
+```
+
+```{python}
+js=df.iloc[0,1]
+
+
+```
+
+
+
+```{python}
+
+dctx = zstd.ZstdDecompressor()
+decompressed = dctx.decompress(js,len(js))
+
+```
+
+
+
+
+
 
 ```{python include=FALSE}
 
