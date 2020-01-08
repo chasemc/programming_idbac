@@ -1,0 +1,92 @@
+
+#  Working with IDBac from Python
+
+
+```{r eval=FALSE, include=FALSE}
+
+library(reticulate)
+#use_virtualenv("r-reticulate")
+# create a new environment 
+#reticulate::virtualenv_create("idbac")
+# install pandas
+conda_install("r-reticulate", "pandas")
+
+#reticulate::use_condaenv("r-C:\Users\CMC\AppData\Local\R-MINI~1\envsreticulate")
+
+```
+
+```{r}
+library(reticulate)
+conda_install("r-reticulate", "pandas")
+
+reticulate::use_condaenv("r-reticulate")
+```
+
+
+```{python}
+import sqlite3
+import json
+import pandas as pd
+```
+
+```{python}
+conn = sqlite3.connect('C:/Users/CMC/Documents/GitHub/programming_idbac/data/databases/my_new_database.sqlite')
+print(conn)
+```
+
+```{python}
+c = conn.cursor()
+```
+
+```{python}
+t = ('172-1',)
+c.execute('SELECT min_mass FROM spectra WHERE strain_id=?', t)
+print(c.fetchall())
+
+```
+
+
+
+
+```{python}
+t = ('172-1',)
+c.execute('SELECT peak_matrix FROM spectra WHERE strain_id=?', t)
+peaks = c.fetchone()
+```
+
+```{python}
+print(type(peaks))
+```
+
+
+
+Get 172-1 sample peak lists as pandas df:
+```{python}
+df = pd.read_sql_query('SELECT peak_matrix FROM spectra WHERE strain_id=:spec', conn, params = {'spec':'172-1'})
+```
+
+
+
+```{python}
+print(df)
+```
+
+
+
+```{python}
+js = df.iloc[0,0]
+
+a = json.loads(js)
+
+```
+
+
+```{python}
+type(a)
+a = pd.DataFrame.from_dict(a)
+print(a)
+```
+
+
+
+
