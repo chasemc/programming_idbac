@@ -10,17 +10,30 @@ library(reticulate)
 #reticulate::virtualenv_create("idbac")
 # install pandas
 conda_install("r-reticulate", "pandas")
-
+conda_install("r-reticulate", "plotly")
 #reticulate::use_condaenv("r-C:\Users\CMC\AppData\Local\R-MINI~1\envsreticulate")
 
 ```
 
-```{r}
-library(reticulate)
-conda_install("r-reticulate", "pandas")
 
-reticulate::use_condaenv("r-reticulate")
+```{python}
+import plotly.offline as py
+import plotly.graph_objects as go
+
+fig = go.Figure(data=go.Bar(y=[2, 3, 1]))
+fig.show()
+
 ```
+
+```{python}
+
+py.plot(fig, filename = "data/python_output/1.html", auto_open=False)
+```
+
+```{r, echo=FALSE}
+htmltools::includeHTML(here::here("data","python_output","1.html"))
+```
+
 
 
 ```{python}
@@ -87,6 +100,40 @@ a = pd.DataFrame.from_dict(a)
 print(a)
 ```
 
+```{python}
+a['mass'][1] 
+```
 
+
+```{python}
+import plotly.graph_objects as go
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=[1.5, 4.5],
+    y=[0.75, 0.75],
+    text=["Unfilled Rectangle", "Filled Rectangle"],
+    mode="text",
+))
+
+for ind in a.index: 
+  fig.add_shape(
+          go.layout.Shape(
+              type="rect",
+              x0=a['mass'][ind] - 1,
+              y0=0,
+              x1=a['mass'][ind] + 1,
+              y1=a['intensity'][ind],
+              line=dict(
+                  color="RoyalBlue",
+                  width=2,
+              ),
+              fillcolor="LightSkyBlue",
+          ))
+
+fig.update_shapes(dict(xref='x', yref='y'))
+fig.show()
+```
 
 
