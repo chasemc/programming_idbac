@@ -17,26 +17,6 @@ conda_install("r-reticulate", "plotly")
 
 
 ```{python}
-import plotly.offline as py
-import plotly.graph_objects as go
-
-fig = go.Figure(data=go.Bar(y=[2, 3, 1]))
-fig.show()
-
-```
-
-```{python}
-
-py.plot(fig, filename = "data/python_output/1.html", auto_open=False)
-```
-
-```{r, echo=FALSE}
-htmltools::includeHTML(here::here("data","python_output","1.html"))
-```
-
-
-
-```{python}
 import sqlite3
 import json
 import pandas as pd
@@ -76,37 +56,23 @@ print(type(peaks))
 Get 172-1 sample peak lists as pandas df:
 ```{python}
 df = pd.read_sql_query('SELECT peak_matrix FROM spectra WHERE strain_id=:spec', conn, params = {'spec':'172-1'})
-```
-
-
-
-```{python}
-print(df)
-```
-
-
-
-```{python}
 js = df.iloc[0,0]
-
-a = json.loads(js)
-
+peaks = json.loads(js)
+peaks = pd.DataFrame.from_dict(peaks)
+print(peaks)
 ```
 
 
+
 ```{python}
-type(a)
-a = pd.DataFrame.from_dict(a)
-print(a)
+df = pd.read_sql_query('SELECT peak_matrix FROM spectra WHERE strain_id=:spec', conn, params = {'spec':'172-1'})
+js = df.iloc[0,0]
+peaks = json.loads(js)
+peaks = pd.DataFrame.from_dict(peaks)
+print(peaks)
 ```
 
-```{python}
-a['mass'][1] 
-```
-
-
-```{python}
-import plotly.graph_objects as go
+```{python include=FALSE}
 
 fig = go.Figure()
 
@@ -133,7 +99,17 @@ for ind in a.index:
           ))
 
 fig.update_shapes(dict(xref='x', yref='y'))
-fig.show()
+
+py.plot(fig, filename = "data/python_output/2.html", auto_open=False)
 ```
 
+
+
+
+```{r, echo=FALSE}
+htmltools::includeHTML(here::here("data","python_output","2.html"))
+
+
+
+```
 
