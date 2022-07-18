@@ -85,7 +85,7 @@ First let's add just a single xml file
 
 
 ```{r}
-mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
+mz_file_paths <- IDBacApp:::find_mz_files(path = here::here("data", "mzxml"),
                                          recursive = FALSE,
                                          full = TRUE)
 # only use one
@@ -109,7 +109,7 @@ mz_file_name <- base::basename(tools::file_path_sans_ext(mz_file_paths))
 
 
 
-IDBacApp::process_mzml(mzFilePaths = here::here("data", "mzxml", paste0(mz_file_name, ".mzXML")),
+IDBacApp::db_from_mzml(mzFilePaths = here::here("data", "mzxml", paste0(mz_file_name, ".mzXML")),
                        sampleIds = mz_file_name,
                        idbacPool = db_connection$my_new_database,
                        acquisitionInfo = NULL)
@@ -143,10 +143,10 @@ dplyr::tbl(db_connection$my_new_database, "xml")
 
 ## Adding multiple mzXML files
 
-It is also possible to add multiple mzXML/mzML files at once, simply pass multiple paths and names as character vectors to `IDBacApp::process_mzml()`. 
+It is also possible to add multiple mzXML/mzML files at once, simply pass multiple paths and names as character vectors to `IDBacApp::db_from_mzml()`. 
 
 ```{r}
-mz_file_paths <- IDBacApp::find_mz_files(path = here::here("data", "mzxml"),
+mz_file_paths <- IDBacApp:::find_mz_files(path = here::here("data", "mzxml"),
                                          recursive = FALSE,
                                          full = TRUE)
 print(mz_file_paths)
@@ -162,7 +162,7 @@ print(mz_file_names)
 
 
 ```{r}
-IDBacApp::process_mzml(mzFilePaths = mz_file_paths,
+IDBacApp::db_from_mzml(mzFilePaths = mz_file_paths,
                        sampleIds = mz_file_names,
                        idbacPool = db_connection$my_new_database,
                        acquisitionInfo = NULL)

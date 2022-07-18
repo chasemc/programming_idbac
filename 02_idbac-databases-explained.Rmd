@@ -65,7 +65,7 @@ jsonlite::fromJSON(a$r_version)
 
 There is also a helper function to get the IDBac/database version:
 ```{r}
-IDBacApp::get_db_version(example_pool)
+IDBacApp::idbac_db_version(example_pool)
 
 ```
 

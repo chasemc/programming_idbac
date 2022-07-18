@@ -207,7 +207,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">example_pool &lt;-<span class="st"> </span>IDBacApp<span class="op">::</span><span class="kw">idbac_connect</span>(<span class="dt">fileName =</span> <span class="st">&quot;idbac_experiment_file&quot;</span>,</a>
 <a class="sourceLine" id="cb4-2" title="2">                                        <span class="dt">filePath =</span> here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;data&quot;</span>,</a>
 <a class="sourceLine" id="cb4-3" title="3">                                                              <span class="st">&quot;example_data&quot;</span>))</a>
-<a class="sourceLine" id="cb4-4" title="4">IDBacApp<span class="op">::</span><span class="kw">get_db_version</span>(example_pool<span class="op">$</span>idbac_experiment_file)</a></code></pre></div>
+<a class="sourceLine" id="cb4-4" title="4">IDBacApp<span class="op">::</span><span class="kw">idbac_db_version</span>(example_pool<span class="op">$</span>idbac_experiment_file)</a></code></pre></div>
 <pre><code>## [1] &#39;1.1.10&#39;</code></pre>
 <p>We can update it as below:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">IDBacApp<span class="op">::</span><span class="kw">update_database_version</span>(example_pool<span class="op">$</span>idbac_experiment_file)</a></code></pre></div>

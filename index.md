@@ -1,7 +1,7 @@
 --- 
 title: "Programming with IDBac"
 author: "Chase Clark"
-date: "`r Sys.Date()`"
+date: "2022-07-18"
 #site: bookdown::bookdown_site
 output: bookdown::pdf_book
 documentclass: book
@@ -36,13 +36,18 @@ Things you want to do will revolve around:
 The data used in this book uses example data that can be found here:
 ftp://massive.ucsd.edu/MSV000084291
 
-```{r}
+
+```r
 library(here)
 ```
 
-Let's download an IDBac experiment file (SQLite database).
-```{r}
+```
+## here() starts at /home/chase/Downloads/tempo/programming_idbac
+```
 
+Let's download an IDBac experiment file (SQLite database).
+
+```r
 if (!file.exists(here::here("data",
                             "example_data",
                             "idbac_experiment_file.sqlite"))) {
@@ -67,17 +72,23 @@ if (!file.exists(here::here("data",
 
 This IDBac database is from one of the first versions of IDBac:
 
-```{r}
+
+```r
 example_pool <- IDBacApp::idbac_connect(fileName = "idbac_experiment_file",
                                         filePath = here::here("data",
                                                               "example_data"))
 IDBacApp::idbac_db_version(example_pool$idbac_experiment_file)
 ```
 
+```
+## [1] '1.1.10'
+```
+
 
 We can update it as below:
 
-```{r eval=FALSE}
+
+```r
 IDBacApp::idbac_update_db(example_pool$idbac_experiment_file)
 ```
 
